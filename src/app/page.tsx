@@ -164,8 +164,16 @@ export default function Home() {
             <tfoot>
               <tr className="font-bold text-base">
                 <td colSpan={6}>Totales</td>
-                <td>{intradayData["Valuacion total"]}</td>
-                <td>{intradayData["PNL total"]}</td>
+                <td>
+                  {formatMoney(intradayData["Valuacion total"], {
+                    maximumFractionDigits: 4,
+                  })}
+                </td>
+                <td>
+                  {formatMoney(intradayData["PNL total"], {
+                    maximumFractionDigits: 4,
+                  })}
+                </td>
               </tr>
             </tfoot>
           </table>
