@@ -1,101 +1,229 @@
-import Image from "next/image";
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
+// @ts-nocheck
+
+"use client";
+
+import useSWR from "swr";
+import { useEffect, useRef, useState } from "react";
+import { formatMoney } from "./utils/formatMoney";
+
+const fetcher = async (url: string) => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Error fetching data");
+  }
+  return response.json();
+};
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const {
+    data: intradayData,
+    error: intradayError,
+    isValidating,
+  } = useSWR("/api/market/proxy/intraday", fetcher, {
+    refreshInterval: 1000,
+    revalidateOnFocus: false,
+  });
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const { data: lastOrdersData, error: lastOrdersError } = useSWR(
+    "/api/market/proxy/last",
+    fetcher,
+    {
+      refreshInterval: 1000,
+      revalidateOnFocus: false,
+    }
+  );
+
+  const previousIntradayData = useRef(null);
+  const [cellStylesIntraday, setCellStylesIntraday] = useState({});
+  const previousLastOrdersData = useRef(null);
+  const [cellStylesLastOrders, setCellStylesLastOrders] = useState({});
+
+  useEffect(() => {
+    if (intradayData && previousIntradayData.current) {
+      const styles = {};
+      intradayData.Datos.forEach((row, index) => {
+        const prevRow = previousIntradayData.current?.Datos?.[index];
+        if (prevRow) {
+          for (const key in row) {
+            if (row[key] > prevRow[key]) {
+              if (!styles[index]) styles[index] = {};
+              styles[index][key] = "bg-green-500";
+            } else if (row[key] < prevRow[key]) {
+              if (!styles[index]) styles[index] = {};
+              styles[index][key] = "bg-red-500";
+            }
+          }
+        }
+      });
+      setCellStylesIntraday(styles);
+
+      // Remove styles after 2 seconds
+      setTimeout(() => {
+        setCellStylesIntraday({});
+      }, 2000);
+    }
+    previousIntradayData.current = intradayData;
+  }, [intradayData]);
+
+  useEffect(() => {
+    if (lastOrdersData && previousLastOrdersData.current) {
+      const styles = {};
+      lastOrdersData.forEach((order, index) => {
+        const prevOrder = previousLastOrdersData.current?.[index];
+        if (prevOrder) {
+          for (const key in order) {
+            if (order[key] > prevOrder[key]) {
+              if (!styles[index]) styles[index] = {};
+              styles[index][key] = "bg-green-500";
+            } else if (order[key] < prevOrder[key]) {
+              if (!styles[index]) styles[index] = {};
+              styles[index][key] = "bg-red-500";
+            }
+          }
+        }
+      });
+      setCellStylesLastOrders(styles);
+
+      // Remove styles after 2 seconds
+      setTimeout(() => {
+        setCellStylesLastOrders({});
+      }, 2000);
+    }
+    previousLastOrdersData.current = lastOrdersData;
+  }, [lastOrdersData]);
+
+  if (intradayError || lastOrdersError) {
+    return (
+      <div className="bg-gray-900 mx-auto">
+        <span>Error al cargar los datos </span>
+      </div>
+    );
+  }
+
+  if (!intradayData || !lastOrdersData) {
+    return (
+      <div className="flex flex-col h-screen justify-center items-center bg-gray-900">
+        <span className="loading loading-ring loading-lg"></span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8 gap-8 bg-gray-900 p-8 h-auto">
+      {/* Primera tabla */}
+      <div className="w-full bg-gray-900">
+        <div className="w-full flex mb-4 gap-8 justify-center items-center">
+          <h1 className="text-lg sm:text-xl font-bold text-center">
+            Estado del mercado: {intradayData["Estado del mercado"]}
+          </h1>
+          <span className="w-8 h-8 flex items-center justify-center">
+            {isValidating && (
+              <span className="loading loading-ring loading-md bg-green-500"></span>
+            )}
+          </span>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <div className="overflow-x-auto my-4">
+          <table className="table table-sm max-w-7xl mx-auto ">
+            <thead className="bg-gray-800 text-base">
+              <tr>
+                <th>Titulo</th>
+                <th>Nominales</th>
+                <th>Px Mercado</th>
+                <th>PPC</th>
+                <th>Posi intra</th>
+                <th>PPP intra</th>
+                <th>Valuacion</th>
+                <th>PnL</th>
+              </tr>
+            </thead>
+            <tbody>
+              {intradayData.Datos.map(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (row: any, index: number) => (
+                  <tr key={index}>
+                    {Object.entries(row).map(([key, value]) => (
+                      <td
+                        key={key}
+                        className={cellStylesIntraday[index]?.[key]}
+                      >
+                        {key === "PPC" ||
+                        key === "PPP intra" ||
+                        key === "Valuacion" ||
+                        key === "PnL"
+                          ? formatMoney(value, { maximumFractionDigits: 4 })
+                          : value}
+                      </td>
+                    ))}
+                  </tr>
+                )
+              )}
+            </tbody>
+
+            <tfoot>
+              <tr className="font-bold text-base">
+                <td colSpan={6}>Totales</td>
+                <td>{intradayData["Valuacion total"]}</td>
+                <td>{intradayData["PNL total"]}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      {/* Segunda tabla */}
+      <div className="w-full bg-gray-900">
+        <div className="w-full flex mb-4 gap-8 justify-center items-center">
+          <h1 className="text-lg sm:text-xl font-bold text-center">
+            Últimas 10 ordenes
+          </h1>
+          <span className="w-8 h-8 flex items-center justify-center">
+            {isValidating && (
+              <span className="loading loading-ring loading-md bg-green-500"></span>
+            )}
+          </span>
+        </div>
+        <div className="overflow-x-auto my-4">
+          <table className="table table-sm max-w-7xl mx-auto">
+            <thead className="bg-gray-800 text-base">
+              <tr>
+                <th>Fecha</th>
+                <th>TICKER</th>
+                <th>V/N</th>
+                <th>PX</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lastOrdersData.map(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (order: any, index: number) => (
+                  <tr key={index}>
+                    {Object.entries(order).map(([key, value]) => (
+                      <td
+                        key={key}
+                        className={cellStylesLastOrders[index]?.[key]}
+                      >
+                        {key === "PX"
+                          ? formatMoney(value, { maximumFractionDigits: 4 })
+                          : value}
+                      </td>
+                    ))}
+                  </tr>
+                )
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div className="flex max-w-7xl mx-auto flex-col">
+        <div className="divider"></div>
+        <div className="card bg-base-300 rounded-box grid h-20 place-items-center">
+          <footer className="text-center">
+            Desarrollado por Vulcan Tech ©
+          </footer>
+        </div>
+      </div>
     </div>
   );
 }
