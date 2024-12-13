@@ -6,7 +6,7 @@
 
 import useSWR from "swr";
 import { useEffect, useRef, useState } from "react";
-import { formatMoney } from "./utils/formatMoney";
+import { formatPrice } from "./utils/formatMoney";
 
 const fetcher = async (url: string) => {
   const response = await fetch(url);
@@ -52,7 +52,7 @@ export default function Home() {
               styles[index][key] = "bg-green-500";
             } else if (row[key] < prevRow[key]) {
               if (!styles[index]) styles[index] = {};
-              styles[index][key] = "bg-red-500";
+              styles[index][key] = "bg-red-700";
             }
           }
         }
@@ -113,71 +113,60 @@ export default function Home() {
   return (
     <div className="space-y-8 gap-8 bg-gray-900 p-8 h-auto">
       {/* Primera tabla */}
-      <div className="w-full bg-gray-900">
-        <div className="w-full flex mb-4 gap-8 justify-center items-center">
-          <h1 className="text-lg sm:text-xl font-bold text-center">
-            Estado del mercado: {intradayData["Estado del mercado"]}
-          </h1>
-          <span className="w-8 h-8 flex items-center justify-center">
-            {isValidating && (
-              <span className="loading loading-ring loading-md bg-green-500"></span>
-            )}
-          </span>
-        </div>
-        <div className="overflow-x-auto my-4">
-          <table className="table table-sm max-w-7xl mx-auto ">
-            <thead className="bg-gray-800 text-base">
-              <tr>
-                <th>Titulo</th>
-                <th>Nominales</th>
-                <th>Px Mercado</th>
-                <th>PPC</th>
-                <th>Posi intra</th>
-                <th>PPP intra</th>
-                <th>Valuacion</th>
-                <th>PnL</th>
-              </tr>
-            </thead>
-            <tbody>
-              {intradayData.Datos.map(
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (row: any, index: number) => (
-                  <tr key={index}>
-                    {Object.entries(row).map(([key, value]) => (
-                      <td
-                        key={key}
-                        className={cellStylesIntraday[index]?.[key]}
-                      >
-                        {key === "PPC" ||
-                        key === "PPP intra" ||
-                        key === "Valuacion" ||
-                        key === "PnL"
-                          ? formatMoney(value, { maximumFractionDigits: 4 })
-                          : value}
-                      </td>
-                    ))}
-                  </tr>
-                )
-              )}
-            </tbody>
-
-            <tfoot>
-              <tr className="font-bold text-base">
-                <td colSpan={6}>Totales</td>
-                <td>
-                  {formatMoney(intradayData["Valuacion total"], {
-                    maximumFractionDigits: 4,
-                  })}
-                </td>
-                <td>
-                  {formatMoney(intradayData["PNL total"], {
-                    maximumFractionDigits: 4,
-                  })}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+      <div className="overflow-x-auto my-4">
+        <table className="table table-sm max-w-7xl mx-auto">
+          <thead className="bg-gray-800 text-sm">
+            <tr>
+              <th className="px-1 py-2">Titulo</th>
+              <th className="px-1 py-2">Nominales</th>
+              <th className="px-1 py-2">Px Mercado</th>
+              <th className="px-1 py-2">PPC</th>
+              <th className="px-1 py-2">Posi intra</th>
+              <th className="px-1 py-2">PPP intra</th>
+              <th className="px-1 py-2">Valuacion</th>
+              <th className="px-1 py-2">PnL</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              intradayData.Datos.map((row: any, index: number) => (
+                <tr key={index}>
+                  {Object.entries(row).map(([key, value]) => (
+                    <td
+                      key={key}
+                      className={`px-1 py-2 text-sm ${
+                        cellStylesIntraday[index]?.[key]
+                      } ${value < 0 ? "text-red-500" : ""}`}
+                    >
+                      {key === "PPC" ||
+                      key === "PPP intra" ||
+                      key === "Valuacion" ||
+                      key === "PnL"
+                        ? formatPrice(value, { maximumFractionDigits: 4 })
+                        : value}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            }
+          </tbody>
+          <tfoot>
+            <tr className="font-bold text-sm">
+              <td colSpan={6}>Totales</td>
+              <td>
+                {formatPrice(intradayData["Valuacion total"], {
+                  maximumFractionDigits: 4,
+                })}
+              </td>
+              <td>
+                {formatPrice(intradayData["PNL total"], {
+                  maximumFractionDigits: 4,
+                })}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
       </div>
 
       {/* Segunda tabla */}
@@ -210,10 +199,12 @@ export default function Home() {
                     {Object.entries(order).map(([key, value]) => (
                       <td
                         key={key}
-                        className={cellStylesLastOrders[index]?.[key]}
+                        className={`${cellStylesLastOrders[index]?.[key]} ${
+                          value < 0 ? "text-red-500" : ""
+                        }`}
                       >
                         {key === "PX"
-                          ? formatMoney(value, { maximumFractionDigits: 4 })
+                          ? formatPrice(value, { maximumFractionDigits: 4 })
                           : value}
                       </td>
                     ))}

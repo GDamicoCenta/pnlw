@@ -26,3 +26,22 @@ export const reduceByPercentage = (money: number, percentage: number) => {
 
   return rounded;
 };
+
+export const formatPrice = (
+  money: number,
+  lang: string,
+  opts: Partial<Intl.NumberFormatOptions> = {}
+) => {
+  const formattedMoney = formatMoney(
+    money,
+    {
+      style: "decimal",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 4,
+      useGrouping: true,
+      ...opts,
+    },
+    lang
+  );
+  return "$" + formattedMoney;
+};
