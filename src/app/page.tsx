@@ -111,7 +111,7 @@ export default function Home() {
   }
 
   return (
-    <div className="space-y-8 gap-8 bg-gray-900 p-8 h-auto">
+    <div className="space-y-8 gap-8 bg-gray-900 p-2 sm:p-8 h-auto">
       {/* Primera tabla */}
       <div className="overflow-x-auto my-4">
         <table className="table table-sm max-w-7xl mx-auto">
