@@ -238,14 +238,30 @@ export default function Home() {
             }
           </tbody>
           <tfoot>
-            <tr className="font-bold text-sm">
+            <tr className="font-bold text-base">
               <td colSpan={6}>Totales</td>
-              <td>
+              <td
+                className={`${
+                  Number(intradayData["Valuacion total"]) > 0
+                    ? "text-green-500"
+                    : Number(intradayData["Valuacion total"]) < 0
+                    ? "text-red-500"
+                    : "text-gray-500"
+                }`}
+              >
                 {formatPrice(intradayData["Valuacion total"], {
                   maximumFractionDigits: 4,
                 })}
               </td>
-              <td>
+              <td
+                className={`${
+                  Number(intradayData["PNL total"]) > 0
+                    ? "text-green-500"
+                    : Number(intradayData["PNL total"]) < 0
+                    ? "text-red-500"
+                    : "text-gray-500"
+                }`}
+              >
                 {formatPrice(intradayData["PNL total"], {
                   maximumFractionDigits: 4,
                 })}
@@ -349,14 +365,30 @@ export default function Home() {
             ))}
           </tbody>
           <tfoot>
-            <tr className="font-bold text-sm">
+            <tr className="font-bold text-base">
               <td colSpan={6}>Totales</td>
-              <td>
+              <td
+                className={`${
+                  Number(extraTableData["Valuacion total"]) > 0
+                    ? "text-green-500"
+                    : Number(extraTableData["Valuacion total"]) < 0
+                    ? "text-red-500"
+                    : "text-gray-500"
+                }`}
+              >
                 {formatPrice(extraTableData["Valuacion total"], {
                   maximumFractionDigits: 4,
                 })}
               </td>
-              <td>
+              <td
+                className={`${
+                  Number(extraTableData["PNL total"]) > 0
+                    ? "text-green-500"
+                    : Number(extraTableData["PNL total"]) < 0
+                    ? "text-red-500"
+                    : "text-gray-500"
+                }`}
+              >
                 {formatPrice(extraTableData["PNL total"], {
                   maximumFractionDigits: 4,
                 })}
