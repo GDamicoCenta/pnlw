@@ -256,15 +256,7 @@ export default function Home() {
           <tfoot>
             <tr className="font-bold text-base">
               <td colSpan={6}>Totales</td>
-              <td
-                className={`${
-                  Number(intradayData["Valuacion total"]) > 0
-                    ? "text-green-500"
-                    : Number(intradayData["Valuacion total"]) < 0
-                    ? "text-red-500"
-                    : "text-gray-500"
-                }`}
-              >
+              <td className={`text-white`}>
                 {formatMoney(intradayData["Valuacion total"], {
                   minimumFractionDigits: 0,
                   maximumFractionDigits: 0,
@@ -419,15 +411,7 @@ export default function Home() {
           <tfoot>
             <tr className="font-bold text-base">
               <td colSpan={6}>Totales</td>
-              <td
-                className={`${
-                  Number(extraTableData["Valuacion total"]) > 0
-                    ? "text-green-500"
-                    : Number(extraTableData["Valuacion total"]) < 0
-                    ? "text-red-500"
-                    : "text-gray-500"
-                }`}
-              >
+              <td className={`text-white`}>
                 {formatMoney(extraTableData["Valuacion total"], {
                   minimumFractionDigits: 0,
                   maximumFractionDigits: 0,
