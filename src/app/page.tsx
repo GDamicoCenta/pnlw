@@ -6,7 +6,7 @@
 
 import useSWR from "swr";
 import { useEffect, useRef, useState } from "react";
-import { formatPrice } from "./utils/formatMoney";
+import { formatMoney, formatPrice } from "./utils/formatMoney";
 
 const fetcher = async (url: string) => {
   const response = await fetch(url);
@@ -25,7 +25,7 @@ export default function Home() {
     refreshInterval: 1000,
     revalidateOnFocus: false,
   });
-
+  console.log("intradayData", intradayData);
   const { data: lastOrdersData, error: lastOrdersError } = useSWR(
     "/api/market/proxy/last",
     fetcher,
@@ -203,14 +203,15 @@ export default function Home() {
         <table className="table table-sm max-w-7xl mx-auto">
           <thead className="bg-gray-800 text-sm">
             <tr>
-              <th className="px-1 py-2">Titulo</th>
-              <th className="px-1 py-2">Nominales</th>
-              <th className="px-1 py-2">Px Mercado</th>
-              <th className="px-1 py-2">PPC</th>
-              <th className="px-1 py-2">Posi intra</th>
-              <th className="px-1 py-2">PPP intra</th>
-              <th className="px-1 py-2">Valuacion</th>
-              <th className="px-1 py-2">PnL</th>
+              <th className="">Titulo</th>
+              <th className="">Nominales</th>
+              <th className="">Px Mercado</th>
+              <th className="">PPC</th>
+              <th className="">Posi intra</th>
+              <th className="">PPP intra</th>
+              <th className="">Valuacion</th>
+              <th className="">PnL</th>
+              <th className="">PnL acumulado</th>
             </tr>
           </thead>
           <tbody>
@@ -221,15 +222,30 @@ export default function Home() {
                   {Object.entries(row).map(([key, value]) => (
                     <td
                       key={key}
-                      className={`px-1 py-2 text-sm ${
+                      className={` text-sm ${
                         cellStylesIntraday[index]?.[key]
                       } ${value < 0 ? "text-red-500" : ""}`}
                     >
-                      {key === "PPC" ||
+                      {key === "PPP1" ||
+                      key === "Px Mercado" ||
                       key === "PPP intra" ||
-                      key === "Valuacion" ||
-                      key === "PnL"
-                        ? formatPrice(value, { maximumFractionDigits: 4 })
+                      key === "PPP2" ||
+                      key === "PnL" ||
+                      key === "PnL-acumulado"
+                        ? formatPrice(value, "es", { maximumFractionDigits: 2 })
+                        : key === "Valuacion"
+                        ? formatMoney(value, {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0,
+                          })
+                        : key === "Nominales" || key === "Intraday"
+                        ? new Intl.NumberFormat("es", {
+                            style: "decimal",
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0,
+                            signDisplay: "auto",
+                            useGrouping: true,
+                          }).format(value)
                         : value}
                     </td>
                   ))}
@@ -249,8 +265,9 @@ export default function Home() {
                     : "text-gray-500"
                 }`}
               >
-                {formatPrice(intradayData["Valuacion total"], {
-                  maximumFractionDigits: 4,
+                {formatMoney(intradayData["Valuacion total"], {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
                 })}
               </td>
               <td
@@ -263,7 +280,20 @@ export default function Home() {
                 }`}
               >
                 {formatPrice(intradayData["PNL total"], {
-                  maximumFractionDigits: 4,
+                  maximumFractionDigits: 2,
+                })}
+              </td>
+              <td
+                className={`${
+                  Number(intradayData["PNL-acumulado-total"]) > 0
+                    ? "text-green-500"
+                    : Number(intradayData["PNL-acumulado-total"]) < 0
+                    ? "text-red-500"
+                    : "text-gray-500"
+                }`}
+              >
+                {formatPrice(intradayData["PNL-acumulado-total"], {
+                  maximumFractionDigits: 2,
                 })}
               </td>
             </tr>
@@ -306,7 +336,14 @@ export default function Home() {
                         }`}
                       >
                         {key === "PX"
-                          ? formatPrice(value, { maximumFractionDigits: 4 })
+                          ? formatPrice(value, { maximumFractionDigits: 2 })
+                          : key === "VN"
+                          ? new Intl.NumberFormat("es", {
+                              style: "decimal",
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0,
+                              signDisplay: "auto",
+                            }).format(value)
                           : value}
                       </td>
                     ))}
@@ -333,14 +370,15 @@ export default function Home() {
         <table className="table table-sm max-w-7xl mx-auto">
           <thead className="bg-gray-800 text-sm">
             <tr>
-              <th className="px-1 py-2">Titulo</th>
-              <th className="px-1 py-2">Nominales</th>
-              <th className="px-1 py-2">Px Mercado</th>
-              <th className="px-1 py-2">PPC</th>
-              <th className="px-1 py-2">Intraday</th>
-              <th className="px-1 py-2">PPP</th>
-              <th className="px-1 py-2">Valuacion</th>
-              <th className="px-1 py-2">PnL</th>
+              <th className="">Titulo</th>
+              <th className="">Nominales</th>
+              <th className="">Px Mercado</th>
+              <th className="">PPC</th>
+              <th className="">Intraday</th>
+              <th className="">PPP</th>
+              <th className="">Valuacion</th>
+              <th className="">PnL</th>
+              <th className="">PnL acumulado</th>
             </tr>
           </thead>
           <tbody>
@@ -349,15 +387,29 @@ export default function Home() {
                 {Object.entries(row).map(([key, value]) => (
                   <td
                     key={key}
-                    className={`px-1 py-2 text-sm ${
+                    className={` text-sm ${
                       cellStylesExtraTable[index]?.[key]
                     } ${value < 0 ? "text-red-500" : ""}`}
                   >
-                    {key === "PPC" ||
-                    key === "PPP" ||
-                    key === "Valuacion" ||
-                    key === "PnL"
-                      ? formatPrice(value, { maximumFractionDigits: 4 })
+                    {key === "Px Mercado" ||
+                    key === "PPP1" ||
+                    key === "PPP2" ||
+                    key === "PnL" ||
+                    key === "PnL-acumulado"
+                      ? formatPrice(value, { maximumFractionDigits: 2 })
+                      : key === "Valuacion"
+                      ? formatMoney(value, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0,
+                        })
+                      : key === "Nominales" || key === "Intraday"
+                      ? new Intl.NumberFormat("es", {
+                          style: "decimal",
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0,
+                          signDisplay: "auto",
+                          useGrouping: true,
+                        }).format(value)
                       : value}
                   </td>
                 ))}
@@ -376,8 +428,9 @@ export default function Home() {
                     : "text-gray-500"
                 }`}
               >
-                {formatPrice(extraTableData["Valuacion total"], {
-                  maximumFractionDigits: 4,
+                {formatMoney(extraTableData["Valuacion total"], {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
                 })}
               </td>
               <td
@@ -390,7 +443,20 @@ export default function Home() {
                 }`}
               >
                 {formatPrice(extraTableData["PNL total"], {
-                  maximumFractionDigits: 4,
+                  maximumFractionDigits: 2,
+                })}
+              </td>
+              <td
+                className={`${
+                  Number(extraTableData["PNL-acumulado-total"]) > 0
+                    ? "text-green-500"
+                    : Number(extraTableData["PNL-acumulado-total"]) < 0
+                    ? "text-red-500"
+                    : "text-gray-500"
+                }`}
+              >
+                {formatPrice(extraTableData["PNL-acumulado-total"], {
+                  maximumFractionDigits: 2,
                 })}
               </td>
             </tr>
@@ -413,10 +479,10 @@ export default function Home() {
         <table className="table table-sm max-w-7xl mx-auto">
           <thead className="bg-gray-800 text-sm">
             <tr>
-              <th className="px-1 py-2">Ticker</th>
-              <th className="px-1 py-2">TIPO</th>
-              <th className="px-1 py-2">VN</th>
-              <th className="px-1 py-2">PX</th>
+              <th className="">Ticker</th>
+              <th className="">TIPO</th>
+              <th className="">VN</th>
+              <th className="">PX</th>
             </tr>
           </thead>
           <tbody>
@@ -425,11 +491,20 @@ export default function Home() {
                 {Object.entries(row).map(([key, value]) => (
                   <td
                     key={key}
-                    className={`px-1 py-2 text-sm ${
+                    className={` text-sm ${
                       cellStylesPendingTable[index]?.[key]
                     } ${value < 0 ? "text-red-500" : ""}`}
                   >
-                    {value}
+                    {key === "PX"
+                      ? formatPrice(value, { maximumFractionDigits: 2 })
+                      : key === "VN"
+                      ? new Intl.NumberFormat("es", {
+                          style: "decimal",
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0,
+                          signDisplay: "auto",
+                        }).format(value)
+                      : value}
                   </td>
                 ))}
               </tr>

@@ -41,7 +41,7 @@ export const formatPrice = (
       useGrouping: true,
       ...opts,
     },
-    lang
+    "es"
   );
   return "$" + formattedMoney;
 };
