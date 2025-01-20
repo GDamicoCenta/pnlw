@@ -71,7 +71,7 @@ export default function Home() {
           for (const key in row) {
             if (row[key] > prevRow[key]) {
               if (!styles[index]) styles[index] = {};
-              styles[index][key] = "bg-green-500";
+              styles[index][key] = "bg-green-700";
             } else if (row[key] < prevRow[key]) {
               if (!styles[index]) styles[index] = {};
               styles[index][key] = "bg-red-700";
@@ -98,7 +98,7 @@ export default function Home() {
           for (const key in order) {
             if (order[key] > prevOrder[key]) {
               if (!styles[index]) styles[index] = {};
-              styles[index][key] = "bg-green-500";
+              styles[index][key] = "bg-green-700";
             } else if (order[key] < prevOrder[key]) {
               if (!styles[index]) styles[index] = {};
               styles[index][key] = "bg-red-500";
@@ -125,7 +125,7 @@ export default function Home() {
           for (const key in row) {
             if (row[key] > prevRow[key]) {
               if (!styles[index]) styles[index] = {};
-              styles[index][key] = "bg-green-500";
+              styles[index][key] = "bg-green-700";
             } else if (row[key] < prevRow[key]) {
               if (!styles[index]) styles[index] = {};
               styles[index][key] = "bg-red-700";
@@ -152,7 +152,7 @@ export default function Home() {
           for (const key in row) {
             if (row[key] > prevRow[key]) {
               if (!styles[index]) styles[index] = {};
-              styles[index][key] = "bg-green-500";
+              styles[index][key] = "bg-green-700";
             } else if (row[key] < prevRow[key]) {
               if (!styles[index]) styles[index] = {};
               styles[index][key] = "bg-red-700";
@@ -196,7 +196,7 @@ export default function Home() {
           </h1>
           <span className="w-8 h-8 flex items-center justify-center">
             {isValidating && (
-              <span className="loading loading-ring loading-md bg-green-500"></span>
+              <span className="loading loading-ring loading-md bg-green-700"></span>
             )}
           </span>
         </div>
@@ -222,18 +222,24 @@ export default function Home() {
                   {Object.entries(row).map(([key, value]) => (
                     <td
                       key={key}
-                      className={` text-sm ${
-                        cellStylesIntraday[index]?.[key]
-                      } ${value < 0 ? "text-red-500" : ""}`}
+                      className={`text-sm ${cellStylesIntraday[index]?.[key]} ${
+                        key === "PnL" || key === "PnL-acumulado"
+                          ? value > 0
+                            ? "text-green-500"
+                            : value < 0
+                            ? "text-red-500"
+                            : ""
+                          : ""
+                      } ${key === "PnL" ? "border-r border-gray-500" : ""}`}
                     >
                       {key === "PPP1" ||
                       key === "Px Mercado" ||
                       key === "PPP intra" ||
-                      key === "PPP2" ||
-                      key === "PnL" ||
-                      key === "PnL-acumulado"
+                      key === "PPP2"
                         ? formatPrice(value, "es", { maximumFractionDigits: 2 })
-                        : key === "Valuacion"
+                        : key === "Valuacion" ||
+                          key === "PnL" ||
+                          key === "PnL-acumulado"
                         ? formatMoney(value, {
                             minimumFractionDigits: 0,
                             maximumFractionDigits: 0,
@@ -253,7 +259,7 @@ export default function Home() {
               ))
             }
           </tbody>
-          <tfoot>
+          <tfoot className="bg-gray-800">
             <tr className="font-bold text-base">
               <td colSpan={6}>Totales</td>
               <td className={`text-white`}>
@@ -271,8 +277,9 @@ export default function Home() {
                     : "text-gray-500"
                 }`}
               >
-                {formatPrice(intradayData["PNL total"], {
-                  maximumFractionDigits: 2,
+                {formatMoney(intradayData["PNL total"], {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
                 })}
               </td>
               <td
@@ -281,11 +288,12 @@ export default function Home() {
                     ? "text-green-500"
                     : Number(intradayData["PNL-acumulado-total"]) < 0
                     ? "text-red-500"
-                    : "text-gray-500"
+                    : "white"
                 }`}
               >
-                {formatPrice(intradayData["PNL-acumulado-total"], {
-                  maximumFractionDigits: 2,
+                {formatMoney(intradayData["PNL-acumulado-total"], {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
                 })}
               </td>
             </tr>
@@ -301,7 +309,7 @@ export default function Home() {
           </h1>
           <span className="w-8 h-8 flex items-center justify-center">
             {isValidating && (
-              <span className="loading loading-ring loading-md bg-green-500"></span>
+              <span className="loading loading-ring loading-md bg-green-700"></span>
             )}
           </span>
         </div>
@@ -320,25 +328,44 @@ export default function Home() {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (order: any, index: number) => (
                   <tr key={index}>
-                    {Object.entries(order).map(([key, value]) => (
-                      <td
-                        key={key}
-                        className={`${cellStylesLastOrders[index]?.[key]} ${
-                          value < 0 ? "text-red-500" : ""
-                        }`}
-                      >
-                        {key === "PX"
-                          ? formatPrice(value, { maximumFractionDigits: 2 })
-                          : key === "VN"
-                          ? new Intl.NumberFormat("es", {
-                              style: "decimal",
-                              minimumFractionDigits: 0,
-                              maximumFractionDigits: 0,
-                              signDisplay: "auto",
-                            }).format(value)
-                          : value}
-                      </td>
-                    ))}
+                    {Object.entries(order).map(([key, value]) => {
+                      const today = new Date();
+
+                      const normalizedToday = today.toISOString().split("T")[0];
+                      const normalizedValue =
+                        key === "Ultimas 10 ordenes" ? value : null;
+
+                      console.log("normalizedToday", normalizedToday);
+                      console.log("normalizedValue", normalizedValue);
+
+                      const isToday =
+                        key === "Ultimas 10 ordenes" &&
+                        normalizedValue === normalizedToday;
+
+                      return (
+                        <td
+                          key={key}
+                          className={`${cellStylesLastOrders[index]?.[key]} ${
+                            value < 0 ? "text-red-500" : ""
+                          } ${
+                            isToday
+                              ? "bg-yellow-300 text-gray-900 font-bold"
+                              : ""
+                          }`}
+                        >
+                          {key === "PX"
+                            ? formatPrice(value, { maximumFractionDigits: 2 })
+                            : key === "VN"
+                            ? new Intl.NumberFormat("es", {
+                                style: "decimal",
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0,
+                                signDisplay: "auto",
+                              }).format(value)
+                            : value}
+                        </td>
+                      );
+                    })}
                   </tr>
                 )
               )}
@@ -355,7 +382,7 @@ export default function Home() {
           </h1>
           <span className="w-8 h-8 flex items-center justify-center">
             {isValidating && (
-              <span className="loading loading-ring loading-md bg-green-500"></span>
+              <span className="loading loading-ring loading-md bg-green-700"></span>
             )}
           </span>
         </div>
@@ -379,17 +406,21 @@ export default function Home() {
                 {Object.entries(row).map(([key, value]) => (
                   <td
                     key={key}
-                    className={` text-sm ${
-                      cellStylesExtraTable[index]?.[key]
-                    } ${value < 0 ? "text-red-500" : ""}`}
+                    className={`text-sm ${cellStylesExtraTable[index]?.[key]} ${
+                      key === "PnL" || key === "PnL-acumulado"
+                        ? value > 0
+                          ? "text-green-500"
+                          : value < 0
+                          ? "text-red-500"
+                          : ""
+                        : ""
+                    } ${key === "PnL" ? "border-r border-gray-500" : ""}`}
                   >
-                    {key === "Px Mercado" ||
-                    key === "PPP1" ||
-                    key === "PPP2" ||
-                    key === "PnL" ||
-                    key === "PnL-acumulado"
+                    {key === "Px Mercado" || key === "PPP1" || key === "PPP2"
                       ? formatPrice(value, { maximumFractionDigits: 2 })
-                      : key === "Valuacion"
+                      : key === "Valuacion" ||
+                        key === "PnL" ||
+                        key === "PnL-acumulado"
                       ? formatMoney(value, {
                           minimumFractionDigits: 0,
                           maximumFractionDigits: 0,
@@ -408,7 +439,7 @@ export default function Home() {
               </tr>
             ))}
           </tbody>
-          <tfoot>
+          <tfoot className="bg-gray-800">
             <tr className="font-bold text-base">
               <td colSpan={6}>Totales</td>
               <td className={`text-white`}>
@@ -426,8 +457,9 @@ export default function Home() {
                     : "text-gray-500"
                 }`}
               >
-                {formatPrice(extraTableData["PNL total"], {
-                  maximumFractionDigits: 2,
+                {formatMoney(extraTableData["PNL total"], {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
                 })}
               </td>
               <td
@@ -436,11 +468,12 @@ export default function Home() {
                     ? "text-green-500"
                     : Number(extraTableData["PNL-acumulado-total"]) < 0
                     ? "text-red-500"
-                    : "text-gray-500"
+                    : "text-white"
                 }`}
               >
-                {formatPrice(extraTableData["PNL-acumulado-total"], {
-                  maximumFractionDigits: 2,
+                {formatMoney(extraTableData["PNL-acumulado-total"], {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
                 })}
               </td>
             </tr>
@@ -456,7 +489,7 @@ export default function Home() {
           </h1>
           <span className="w-8 h-8 flex items-center justify-center">
             {isValidating && (
-              <span className="loading loading-ring loading-md bg-green-500"></span>
+              <span className="loading loading-ring loading-md bg-green-700"></span>
             )}
           </span>
         </div>
