@@ -347,11 +347,7 @@ export default function Home() {
                           key={key}
                           className={`${cellStylesLastOrders[index]?.[key]} ${
                             value < 0 ? "text-red-500" : ""
-                          } ${
-                            isToday
-                              ? "bg-yellow-300 text-gray-900 font-bold"
-                              : ""
-                          }`}
+                          } ${isToday ? " text-yellow-300  font-bold" : ""}`}
                         >
                           {key === "PX"
                             ? formatPrice(value, { maximumFractionDigits: 2 })
