@@ -185,7 +185,7 @@ export default function Home() {
       </div>
     );
   }
-
+  const hiddenColumns = ["PPP1", "Intraday", "PPP2", "PnL-acumulado"];
   return (
     <div className="space-y-8 gap-8 bg-gray-900 p-2 sm:p-8 h-auto">
       {/* Primera tabla */}
@@ -203,48 +203,39 @@ export default function Home() {
         <table className="table table-sm max-w-7xl mx-auto">
           <thead className="bg-gray-800 text-sm">
             <tr>
-              <th className="">Titulo</th>
-              <th className="">Nominales</th>
-              <th className="">Px Mercado</th>
-              <th className="">PPC</th>
-              <th className="">Posi intra</th>
-              <th className="">PPP intra</th>
-              <th className="">Valuacion</th>
-              <th className="">PnL</th>
-              <th className="">PnL acumulado</th>
+              {Object.keys(intradayData.Datos[0] || {})
+                .filter((key) => !hiddenColumns.includes(key))
+                .map((key) => (
+                  <th key={key}>{key}</th>
+                ))}
             </tr>
           </thead>
           <tbody>
-            {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              intradayData.Datos.map((row: any, index: number) => (
-                <tr key={index}>
-                  {Object.entries(row).map(([key, value]) => (
+            {intradayData.Datos.map((row, index) => (
+              <tr key={index}>
+                {Object.entries(row)
+                  .filter(([key]) => !hiddenColumns.includes(key))
+                  .map(([key, value]) => (
                     <td
                       key={key}
                       className={`text-sm ${cellStylesIntraday[index]?.[key]} ${
-                        key === "PnL" || key === "PnL-acumulado"
+                        key === "PnL"
                           ? value > 0
                             ? "text-green-500"
                             : value < 0
                             ? "text-red-500"
                             : ""
                           : ""
-                      } ${key === "PnL" ? "border-r border-gray-500" : ""}`}
+                      } `}
                     >
-                      {key === "PPP1" ||
-                      key === "Px Mercado" ||
-                      key === "PPP intra" ||
-                      key === "PPP2"
+                      {key === "Px Mercado" || key === "PPP intra"
                         ? formatPrice(value, "es", { maximumFractionDigits: 2 })
-                        : key === "Valuacion" ||
-                          key === "PnL" ||
-                          key === "PnL-acumulado"
+                        : key === "Valuacion" || key === "PnL"
                         ? formatMoney(value, {
                             minimumFractionDigits: 0,
                             maximumFractionDigits: 0,
                           })
-                        : key === "Nominales" || key === "Intraday"
+                        : key === "Nominales"
                         ? new Intl.NumberFormat("es", {
                             style: "decimal",
                             minimumFractionDigits: 0,
@@ -255,13 +246,13 @@ export default function Home() {
                         : value}
                     </td>
                   ))}
-                </tr>
-              ))
-            }
+              </tr>
+            ))}
           </tbody>
           <tfoot className="bg-gray-800">
             <tr className="font-bold text-base">
-              <td colSpan={6}>Totales</td>
+              <td colSpan="3">Totales</td>
+
               <td className={`text-white`}>
                 {formatMoney(intradayData["Valuacion total"], {
                   minimumFractionDigits: 0,
@@ -282,25 +273,10 @@ export default function Home() {
                   maximumFractionDigits: 0,
                 })}
               </td>
-              <td
-                className={`${
-                  Number(intradayData["PNL-acumulado-total"]) > 0
-                    ? "text-green-500"
-                    : Number(intradayData["PNL-acumulado-total"]) < 0
-                    ? "text-red-500"
-                    : "white"
-                }`}
-              >
-                {formatMoney(intradayData["PNL-acumulado-total"], {
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                })}
-              </td>
             </tr>
           </tfoot>
         </table>
       </div>
-
       {/* Segunda tabla */}
       <div className="w-full bg-gray-900">
         <div className="w-full flex mb-4 gap-8 justify-center items-center">
@@ -369,7 +345,6 @@ export default function Home() {
           </table>
         </div>
       </div>
-
       {/* Tercera tabla */}
       <div className="overflow-x-auto my-4">
         <div className="w-full flex mb-4 gap-8 justify-center items-center">
@@ -388,56 +363,54 @@ export default function Home() {
               <th className="">Titulo</th>
               <th className="">Nominales</th>
               <th className="">Px Mercado</th>
-              <th className="">PPC</th>
-              <th className="">Intraday</th>
-              <th className="">PPP</th>
               <th className="">Valuacion</th>
               <th className="">PnL</th>
-              <th className="">PnL acumulado</th>
             </tr>
           </thead>
           <tbody>
             {extraTableData.Datos.map((row, index) => (
               <tr key={index}>
-                {Object.entries(row).map(([key, value]) => (
-                  <td
-                    key={key}
-                    className={`text-sm ${cellStylesExtraTable[index]?.[key]} ${
-                      key === "PnL" || key === "PnL-acumulado"
-                        ? value > 0
-                          ? "text-green-500"
-                          : value < 0
-                          ? "text-red-500"
+                {Object.entries(row)
+                  .filter(([key]) => !hiddenColumns.includes(key))
+                  .map(([key, value]) => (
+                    <td
+                      key={key}
+                      className={`text-sm ${
+                        cellStylesExtraTable[index]?.[key]
+                      } ${
+                        key === "PnL"
+                          ? value > 0
+                            ? "text-green-500"
+                            : value < 0
+                            ? "text-red-500"
+                            : ""
                           : ""
-                        : ""
-                    } ${key === "PnL" ? "border-r border-gray-500" : ""}`}
-                  >
-                    {key === "Px Mercado" || key === "PPP1" || key === "PPP2"
-                      ? formatPrice(value, { maximumFractionDigits: 2 })
-                      : key === "Valuacion" ||
-                        key === "PnL" ||
-                        key === "PnL-acumulado"
-                      ? formatMoney(value, {
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 0,
-                        })
-                      : key === "Nominales" || key === "Intraday"
-                      ? new Intl.NumberFormat("es", {
-                          style: "decimal",
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 0,
-                          signDisplay: "auto",
-                          useGrouping: true,
-                        }).format(value)
-                      : value}
-                  </td>
-                ))}
+                      } ${key === "PnL" ? "border-r border-gray-500" : ""}`}
+                    >
+                      {key === "Px Mercado" || key === "PPP1" || key === "PPP2"
+                        ? formatPrice(value, { maximumFractionDigits: 2 })
+                        : key === "Valuacion" || key === "PnL"
+                        ? formatMoney(value, {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0,
+                          })
+                        : key === "Nominales"
+                        ? new Intl.NumberFormat("es", {
+                            style: "decimal",
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0,
+                            signDisplay: "auto",
+                            useGrouping: true,
+                          }).format(value)
+                        : value}
+                    </td>
+                  ))}
               </tr>
             ))}
           </tbody>
           <tfoot className="bg-gray-800">
             <tr className="font-bold text-base">
-              <td colSpan={6}>Totales</td>
+              <td colSpan="3">Totales</td>
               <td className={`text-white`}>
                 {formatMoney(extraTableData["Valuacion total"], {
                   minimumFractionDigits: 0,
@@ -458,25 +431,10 @@ export default function Home() {
                   maximumFractionDigits: 0,
                 })}
               </td>
-              <td
-                className={`${
-                  Number(extraTableData["PNL-acumulado-total"]) > 0
-                    ? "text-green-500"
-                    : Number(extraTableData["PNL-acumulado-total"]) < 0
-                    ? "text-red-500"
-                    : "text-white"
-                }`}
-              >
-                {formatMoney(extraTableData["PNL-acumulado-total"], {
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                })}
-              </td>
             </tr>
           </tfoot>
         </table>
       </div>
-
       {/* Cuarta tabla */}
       <div className="overflow-x-auto my-4">
         <div className="w-full flex mb-4 gap-8 justify-center items-center">
@@ -525,7 +483,6 @@ export default function Home() {
           </tbody>
         </table>
       </div>
-
       <div className="flex max-w-7xl mx-auto flex-col">
         <div className="divider"></div>
         <div className="card bg-base-300 rounded-box grid h-20 place-items-center">
