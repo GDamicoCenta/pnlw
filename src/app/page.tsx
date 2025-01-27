@@ -200,8 +200,8 @@ export default function Home() {
             )}
           </span>
         </div>
-        <table className="table table-xs max-w-7xl mx-auto">
-          <thead className="bg-gray-800 text-xs">
+        <table className="table table-xs sm:table-sm max-w-7xl mx-auto">
+          <thead className="bg-gray-800 text-xs sm:text-base">
             <tr>
               {Object.keys(intradayData.Datos[0] || {})
                 .filter((key) => !hiddenColumns.includes(key))
@@ -218,7 +218,9 @@ export default function Home() {
                   .map(([key, value]) => (
                     <td
                       key={key}
-                      className={`text-xs ${cellStylesIntraday[index]?.[key]} ${
+                      className={`text-xs sm:text-base${
+                        cellStylesIntraday[index]?.[key]
+                      } ${
                         key === "PnL"
                           ? value > 0
                             ? "text-green-500"
@@ -250,7 +252,7 @@ export default function Home() {
             ))}
           </tbody>
           <tfoot className="bg-gray-800">
-            <tr className="font-bold text-xs">
+            <tr className="font-bold text-xs sm:text-base">
               <td colSpan="3">Totales</td>
 
               <td className={`text-white`}>
@@ -290,8 +292,8 @@ export default function Home() {
           </span>
         </div>
         <div className="overflow-x-auto my-4">
-          <table className="table table-xs max-w-7xl mx-auto">
-            <thead className="bg-gray-800 text-xs">
+          <table className="table table-xs sm:table-sm max-w-7xl mx-auto">
+            <thead className="bg-gray-800 text-xs sm:text-base">
               <tr>
                 <th>Fecha</th>
                 <th>TICKER</th>
@@ -357,8 +359,8 @@ export default function Home() {
             )}
           </span>
         </div>
-        <table className="table table-xs max-w-7xl mx-auto">
-          <thead className="bg-gray-800 text-xs">
+        <table className="table table-xs sm:table-sm max-w-7xl mx-auto">
+          <thead className="bg-gray-800 text-xs sm:text-base">
             <tr>
               <th className="">Titulo</th>
               <th className="">Nominales</th>
@@ -375,7 +377,7 @@ export default function Home() {
                   .map(([key, value]) => (
                     <td
                       key={key}
-                      className={`text-xs ${
+                      className={`text-xs sm:text-base${
                         cellStylesExtraTable[index]?.[key]
                       } ${
                         key === "PnL"
@@ -409,7 +411,7 @@ export default function Home() {
             ))}
           </tbody>
           <tfoot className="bg-gray-800">
-            <tr className="font-bold text-xs">
+            <tr className="font-bold text-xs sm:text-base">
               <td colSpan="3">Totales</td>
               <td className={`text-white`}>
                 {formatMoney(extraTableData["Valuacion total"], {
@@ -447,8 +449,8 @@ export default function Home() {
             )}
           </span>
         </div>
-        <table className="table table-xs max-w-7xl mx-auto">
-          <thead className="bg-gray-800 text-xs">
+        <table className="table table-xs sm:table-sm max-w-7xl mx-auto">
+          <thead className="bg-gray-800 text-xs sm:text-base">
             <tr>
               <th className="">Ticker</th>
               <th className="">TIPO</th>
@@ -462,7 +464,7 @@ export default function Home() {
                 {Object.entries(row).map(([key, value]) => (
                   <td
                     key={key}
-                    className={` text-xs ${
+                    className={` text-xs sm:text-base ${
                       cellStylesPendingTable[index]?.[key]
                     } ${value < 0 ? "text-red-500" : ""}`}
                   >
