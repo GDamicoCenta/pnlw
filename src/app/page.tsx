@@ -190,7 +190,7 @@ export default function Home() {
     <div className="space-y-8 gap-8 bg-gray-900 p-2 sm:p-8 h-auto">
       {/* Primera tabla */}
       <div className="overflow-x-auto my-4">
-        <div className="w-full flex mb-4 gap-8 justify-center items-center">
+        <div className="w-full flex mb-4  justify-center items-center">
           <h1 className="text-lg sm:text-xl font-bold text-center">
             Estado del mercado: {intradayData["Estado del mercado"]}
           </h1>
@@ -200,8 +200,8 @@ export default function Home() {
             )}
           </span>
         </div>
-        <table className="table table-sm max-w-7xl mx-auto">
-          <thead className="bg-gray-800 text-sm">
+        <table className="table table-xs max-w-7xl mx-auto">
+          <thead className="bg-gray-800 text-xs">
             <tr>
               {Object.keys(intradayData.Datos[0] || {})
                 .filter((key) => !hiddenColumns.includes(key))
@@ -218,7 +218,7 @@ export default function Home() {
                   .map(([key, value]) => (
                     <td
                       key={key}
-                      className={`text-sm ${cellStylesIntraday[index]?.[key]} ${
+                      className={`text-xs ${cellStylesIntraday[index]?.[key]} ${
                         key === "PnL"
                           ? value > 0
                             ? "text-green-500"
@@ -250,7 +250,7 @@ export default function Home() {
             ))}
           </tbody>
           <tfoot className="bg-gray-800">
-            <tr className="font-bold text-base">
+            <tr className="font-bold text-xs">
               <td colSpan="3">Totales</td>
 
               <td className={`text-white`}>
@@ -279,7 +279,7 @@ export default function Home() {
       </div>
       {/* Segunda tabla */}
       <div className="w-full bg-gray-900">
-        <div className="w-full flex mb-4 gap-8 justify-center items-center">
+        <div className="w-full flex mb-4  justify-center items-center">
           <h1 className="text-lg sm:text-xl font-bold text-center">
             Últimas 10 ordenes
           </h1>
@@ -290,8 +290,8 @@ export default function Home() {
           </span>
         </div>
         <div className="overflow-x-auto my-4">
-          <table className="table table-sm max-w-7xl mx-auto">
-            <thead className="bg-gray-800 text-base">
+          <table className="table table-xs max-w-7xl mx-auto">
+            <thead className="bg-gray-800 text-xs">
               <tr>
                 <th>Fecha</th>
                 <th>TICKER</th>
@@ -347,7 +347,7 @@ export default function Home() {
       </div>
       {/* Tercera tabla */}
       <div className="overflow-x-auto my-4">
-        <div className="w-full flex mb-4 gap-8 justify-center items-center">
+        <div className="w-full flex mb-4  justify-center items-center">
           <h1 className="text-lg sm:text-xl font-bold text-center">
             Tabla Crypto
           </h1>
@@ -357,8 +357,8 @@ export default function Home() {
             )}
           </span>
         </div>
-        <table className="table table-sm max-w-7xl mx-auto">
-          <thead className="bg-gray-800 text-sm">
+        <table className="table table-xs max-w-7xl mx-auto">
+          <thead className="bg-gray-800 text-xs">
             <tr>
               <th className="">Titulo</th>
               <th className="">Nominales</th>
@@ -375,7 +375,7 @@ export default function Home() {
                   .map(([key, value]) => (
                     <td
                       key={key}
-                      className={`text-sm ${
+                      className={`text-xs ${
                         cellStylesExtraTable[index]?.[key]
                       } ${
                         key === "PnL"
@@ -409,7 +409,7 @@ export default function Home() {
             ))}
           </tbody>
           <tfoot className="bg-gray-800">
-            <tr className="font-bold text-base">
+            <tr className="font-bold text-xs">
               <td colSpan="3">Totales</td>
               <td className={`text-white`}>
                 {formatMoney(extraTableData["Valuacion total"], {
@@ -437,7 +437,7 @@ export default function Home() {
       </div>
       {/* Cuarta tabla */}
       <div className="overflow-x-auto my-4">
-        <div className="w-full flex mb-4 gap-8 justify-center items-center">
+        <div className="w-full flex mb-4  justify-center items-center">
           <h1 className="text-lg sm:text-xl font-bold text-center">
             Tabla de pendientes
           </h1>
@@ -447,8 +447,8 @@ export default function Home() {
             )}
           </span>
         </div>
-        <table className="table table-sm max-w-7xl mx-auto">
-          <thead className="bg-gray-800 text-sm">
+        <table className="table table-xs max-w-7xl mx-auto">
+          <thead className="bg-gray-800 text-xs">
             <tr>
               <th className="">Ticker</th>
               <th className="">TIPO</th>
@@ -462,7 +462,7 @@ export default function Home() {
                 {Object.entries(row).map(([key, value]) => (
                   <td
                     key={key}
-                    className={` text-sm ${
+                    className={` text-xs ${
                       cellStylesPendingTable[index]?.[key]
                     } ${value < 0 ? "text-red-500" : ""}`}
                   >
