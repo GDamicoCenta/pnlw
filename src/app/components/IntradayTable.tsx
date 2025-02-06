@@ -9,15 +9,23 @@ export type IntradayData = {
   [key: string]: number | string | null | undefined;
 };
 
+export type IntradayTotales = {
+  "Valuacion total": number;
+  "PnL total": number;
+  "PnL acumulado total": number;
+  "Estado del mercado": string;
+};
+
+export type IntradayInnerData = {
+  data: IntradayData[];
+  totales: IntradayTotales;
+};
+
 export type IntradayApiResponse = {
-  data?: IntradayData[];
-  success?: boolean;
+  success: boolean;
+  data: IntradayInnerData;
+  pagination: unknown;
   message?: string;
-  errors?: {
-    code: string;
-    message: string;
-  }[];
-  [key: string]: unknown;
 };
 
 type IntradayTableProps = {
@@ -30,7 +38,7 @@ const fetcher = (url: string): Promise<IntradayApiResponse> =>
 const IntradayTable: React.FC<IntradayTableProps> = ({
   hiddenColumns = [],
 }) => {
-  const { data: intradayData, isValidating } = useSWR<IntradayApiResponse>(
+  const { data: intradayResponse, isValidating } = useSWR<IntradayApiResponse>(
     "/api/market/proxy/intraday",
     fetcher,
     {
@@ -39,6 +47,7 @@ const IntradayTable: React.FC<IntradayTableProps> = ({
     }
   );
 
+  // Usamos una referencia para comparar datos anteriores y actuales
   const previousIntradayData = useRef<IntradayApiResponse | undefined>(
     undefined
   );
@@ -47,15 +56,16 @@ const IntradayTable: React.FC<IntradayTableProps> = ({
   >({});
 
   useEffect(() => {
+    // Asegurarse de que existan los datos internos
     if (
-      intradayData &&
+      intradayResponse &&
       previousIntradayData.current &&
-      intradayData.data &&
-      previousIntradayData.current.data
+      intradayResponse.data?.data &&
+      previousIntradayData.current.data?.data
     ) {
       const styles: Record<number, Record<string, string>> = {};
-      intradayData.data.forEach((row, index) => {
-        const prevRow = previousIntradayData.current?.data?.[index];
+      intradayResponse.data.data.forEach((row, index) => {
+        const prevRow = previousIntradayData.current?.data?.data?.[index];
         if (prevRow) {
           for (const key in row) {
             const currentValue = row[key];
@@ -83,12 +93,12 @@ const IntradayTable: React.FC<IntradayTableProps> = ({
       }, 2000);
       return () => clearTimeout(timer);
     }
-    previousIntradayData.current = intradayData;
-  }, [intradayData]);
+    previousIntradayData.current = intradayResponse;
+  }, [intradayResponse]);
 
-  if (!intradayData) return <TableSkeleton />;
+  if (!intradayResponse) return <TableSkeleton />;
 
-  if (intradayData?.success === false) {
+  if (intradayResponse.success === false) {
     return (
       <div className="flex flex-col items-center justify-center gap-2">
         <h1 className="text-lg sm:text-xl font-bold text-center">
@@ -97,16 +107,17 @@ const IntradayTable: React.FC<IntradayTableProps> = ({
         <div className="flex flex-col items-center justify-center bg-gray-600 text-white p-6 rounded-xl shadow-lg gap-4 w-fit">
           <ServerErrorIcon className="w-24 h-24" width={115} />
           <p className="text-lg font-semibold text-center">
-            {intradayData.message}
+            {intradayResponse.message}
           </p>
         </div>
       </div>
     );
   }
 
-  const columns: TableColumn<IntradayData>[] = Object.keys(
-    intradayData.data && intradayData.data[0] ? intradayData.data[0] : {}
-  )
+  // Asegurarse de que exista al menos una fila para definir las columnas
+  const firstRow = intradayResponse.data.data[0] || {};
+
+  const columns: TableColumn<IntradayData>[] = Object.keys(firstRow)
     .filter((key) => {
       const normalizedKey = key.toLowerCase().trim();
       const normalizedHidden = hiddenColumns.map((h) => h.toLowerCase().trim());
@@ -161,21 +172,21 @@ const IntradayTable: React.FC<IntradayTableProps> = ({
     <tr className="font-bold text-xs sm:text-base">
       <td colSpan={3}>Totales</td>
       <td className="text-white">
-        {formatMoney(intradayData["Valuacion total"] as number, {
+        {formatMoney(intradayResponse.data.totales["Valuacion total"], {
           minimumFractionDigits: 0,
           maximumFractionDigits: 0,
         })}
       </td>
       <td
         className={
-          (intradayData["PNL total"] as number) > 0
+          intradayResponse.data.totales["PnL total"] > 0
             ? "text-green-500"
-            : (intradayData["PNL total"] as number) < 0
+            : intradayResponse.data.totales["PnL total"] < 0
             ? "text-red-500"
             : "text-gray-500"
         }
       >
-        {formatMoney(intradayData["PNL total"] as number, {
+        {formatMoney(intradayResponse.data.totales["PnL total"], {
           minimumFractionDigits: 0,
           maximumFractionDigits: 0,
         })}
@@ -188,7 +199,7 @@ const IntradayTable: React.FC<IntradayTableProps> = ({
   return (
     <ReusableTable
       title={title}
-      data={intradayData.data || []}
+      data={intradayResponse.data.data || []}
       columns={columns}
       isLoading={isValidating}
       cellStyles={cellStylesIntraday}

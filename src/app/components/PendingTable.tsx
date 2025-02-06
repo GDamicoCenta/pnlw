@@ -12,9 +12,13 @@ export type PendingData = {
   [key: string]: number | string | null | undefined;
 };
 
+export type PendingInnerData = {
+  data: PendingData[];
+};
+
 export type PendingApiResponse = {
-  data?: PendingData[];
-  success?: boolean;
+  success: boolean;
+  data: PendingInnerData;
   message?: string;
   [key: string]: unknown;
 };
@@ -43,12 +47,12 @@ const PendingTable: React.FC = () => {
     if (
       pendingResponse &&
       previousPendingResponse.current &&
-      pendingResponse.data &&
-      previousPendingResponse.current.data
+      pendingResponse.data?.data &&
+      previousPendingResponse.current.data?.data
     ) {
       const styles: Record<number, Record<string, string>> = {};
-      pendingResponse.data.forEach((row, index) => {
-        const prevRow = previousPendingResponse.current!.data![index];
+      pendingResponse.data.data.forEach((row, index) => {
+        const prevRow = previousPendingResponse.current!.data!.data![index];
         if (prevRow) {
           for (const key in row) {
             const currentValue = row[key];
@@ -138,7 +142,7 @@ const PendingTable: React.FC = () => {
     <div className="overflow-x-auto my-4">
       <ReusableTable
         title="Tabla de pendientes"
-        data={pendingResponse.data || []}
+        data={pendingResponse.data.data || []}
         columns={columns}
         isLoading={isValidating}
         cellStyles={cellStylesPendingTable}

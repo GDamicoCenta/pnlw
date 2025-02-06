@@ -9,16 +9,20 @@ export type CryptoData = {
   [key: string]: number | string | null | undefined;
 };
 
-export type ExtraTableApiResponse = {
-  data?: CryptoData[];
+export type CryptoInnerData = {
+  data: CryptoData[];
+  totales: {
+    "Valuacion total": number;
+    "PnL total": number;
+    "PnL acumulado total": number;
+  };
+};
 
-  [key: string]: unknown;
-  success?: boolean;
+export type ExtraTableApiResponse = {
+  success: boolean;
+  data: CryptoInnerData;
+  pagination: unknown;
   message?: string;
-  errors?: {
-    code: string;
-    message: string;
-  }[];
 };
 
 type CryptoTableProps = {
@@ -45,8 +49,9 @@ const CryptoTable: React.FC<CryptoTableProps> = ({ hiddenColumns = [] }) => {
   useEffect(() => {
     if (extraTableData && previousExtraTableData.current) {
       const styles: Record<number, Record<string, string>> = {};
-      extraTableData.data?.forEach((row, index) => {
-        const prevRow = previousExtraTableData.current?.data?.[index];
+      // Ahora comparamos sobre extraTableData.data.data
+      extraTableData.data.data?.forEach((row, index) => {
+        const prevRow = previousExtraTableData.current?.data.data?.[index];
         if (prevRow) {
           for (const key in row) {
             const currentValue = row[key];
@@ -78,7 +83,7 @@ const CryptoTable: React.FC<CryptoTableProps> = ({ hiddenColumns = [] }) => {
 
   if (!extraTableData) return <TableSkeleton />;
 
-  if (extraTableData?.success === false) {
+  if (extraTableData.success === false) {
     return (
       <div className="flex flex-col items-center justify-center gap-2">
         <h1 className="text-lg sm:text-xl font-bold text-center">
@@ -94,6 +99,7 @@ const CryptoTable: React.FC<CryptoTableProps> = ({ hiddenColumns = [] }) => {
     );
   }
 
+  // Definimos las columnas de la tabla
   const columns: TableColumn<CryptoData>[] = [
     {
       key: "Titulo",
@@ -162,30 +168,32 @@ const CryptoTable: React.FC<CryptoTableProps> = ({ hiddenColumns = [] }) => {
     },
   ];
 
+  // Filtrar columnas ocultas
   const normalizedHidden = hiddenColumns.map((h) => h.toLowerCase().trim());
   const filteredColumns = columns.filter(
     (col) => !normalizedHidden.includes(String(col.key).toLowerCase().trim())
   );
 
+  // Renderizamos el pie de tabla utilizando los totales de la respuesta
   const renderFooter = (): React.ReactNode => (
     <tr className="font-bold text-xs sm:text-base">
       <td colSpan={3}>Totales</td>
       <td className="text-white">
-        {formatMoney(extraTableData["Valuacion total"] as number, {
+        {formatMoney(extraTableData.data.totales["Valuacion total"], {
           minimumFractionDigits: 0,
           maximumFractionDigits: 0,
         })}
       </td>
       <td
         className={
-          (extraTableData["PNL total"] as number) > 0
+          extraTableData.data.totales["PnL total"] > 0
             ? "text-green-500"
-            : (extraTableData["PNL total"] as number) < 0
+            : extraTableData.data.totales["PnL total"] < 0
             ? "text-red-500"
             : "text-gray-500"
         }
       >
-        {formatMoney(extraTableData["PNL total"] as number, {
+        {formatMoney(extraTableData.data.totales["PnL total"], {
           minimumFractionDigits: 0,
           maximumFractionDigits: 0,
         })}
@@ -197,7 +205,7 @@ const CryptoTable: React.FC<CryptoTableProps> = ({ hiddenColumns = [] }) => {
     <div className="overflow-x-auto my-4">
       <ReusableTable
         title="Tabla Crypto"
-        data={extraTableData.data || []}
+        data={extraTableData.data.data || []}
         columns={filteredColumns}
         isLoading={isValidating}
         cellStyles={cellStylesExtraTable}

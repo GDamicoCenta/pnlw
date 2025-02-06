@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import useSWR from "swr";
-
 import ReusableTable, { TableColumn } from "./ReusableTable";
 import TableSkeleton from "./TableSkeleton";
 import { ServerErrorIcon } from "./error-icon";
@@ -10,11 +9,16 @@ export type LastOrderData = {
   [key: string]: number | string | null | undefined;
 };
 
-export type LastOrdersApiResponse = {
+export type LastOrdersInnerData = {
   data: LastOrderData[];
-  success?: boolean;
+  totales: unknown[]; // En este caso, totales es un array vacío
+};
+
+export type LastOrdersApiResponse = {
+  success: boolean;
+  data: LastOrdersInnerData;
+  pagination: unknown;
   message?: string;
-  pagination?: unknown;
 };
 
 const fetcher = (url: string): Promise<LastOrdersApiResponse> =>
@@ -38,12 +42,12 @@ const LastOrdersTable: React.FC = () => {
     if (
       lastOrdersResponse &&
       previousLastOrdersData.current &&
-      lastOrdersResponse.data &&
-      previousLastOrdersData.current.data
+      lastOrdersResponse.data?.data &&
+      previousLastOrdersData.current.data?.data
     ) {
       const styles: Record<number, Record<string, string>> = {};
-      lastOrdersResponse.data.forEach((order, index) => {
-        const prevOrder = previousLastOrdersData.current!.data![index];
+      lastOrdersResponse.data.data.forEach((order, index) => {
+        const prevOrder = previousLastOrdersData.current!.data!.data![index];
         if (prevOrder) {
           for (const key in order) {
             const currentValue = order[key];
@@ -99,14 +103,15 @@ const LastOrdersTable: React.FC = () => {
       cellClass: (value: unknown) => {
         if (typeof value === "string") {
           const date = new Date(value);
-          const normalizedYesterday = date.toISOString().split("T")[0];
-          return value === normalizedYesterday
-            ? "text-yellow-300 font-bold"
-            : "";
+          const normalizedDate = date.toISOString().split("T")[0];
+          const today = new Date().toISOString().split("T")[0];
+          // Solo si la fecha es la de hoy se aplica el estilo
+          return normalizedDate === today ? "text-yellow-300 font-bold" : "";
         }
         return "";
       },
     },
+
     {
       key: "TICKER",
       header: "TICKER",
@@ -147,7 +152,7 @@ const LastOrdersTable: React.FC = () => {
     <div className="overflow-x-auto my-4">
       <ReusableTable
         title="Últimas 10 órdenes"
-        data={lastOrdersResponse.data}
+        data={lastOrdersResponse.data.data}
         columns={columns}
         isLoading={isValidating}
         cellStyles={cellStylesLastOrders}
